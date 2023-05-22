@@ -17,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
   $errors['body'] = !empty($_COOKIE['body_error']);
   $errors['ability'] = !empty($_COOKIE['ability_error']);
   $errors['biographiya'] = !empty($_COOKIE['biographiya_error']);
+  $errors['check'] = !empty($_COOKIE['check_error']);
 
   if ($errors['name']) {
     setcookie('name_error', '', 100000);
@@ -36,7 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
   }
   if ($errors['body']) {
     setcookie('body_error', '', 100000);
-    $messages[] = '<div class="error">Сколько у вас конечностей?</div>';
+    $messages[] = '<div class="error">>Сколько у вас конечностей?</div>';
   }
   if ($errors['ability']) {
     setcookie('ability_error', '', 100000);
@@ -45,6 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
   if ($errors['biographiya']) {
     setcookie('biographiya_error', '', 100000);
     $messages[] = '<div class="error">Напишите про себя</div>';
+  }
+    if ($errors['check']) {
+    setcookie('check_error', '', 100000);
+    $messages[] = '<div class="error">Ознакомьтесь с соглашением.</div>';
   }
 
   $values = array();
@@ -55,6 +60,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'GET') {
   $values['body'] = empty($_COOKIE['body_value']) ? '' : $_COOKIE['body_value'];
   $values['ability'] = empty($_COOKIE['ability_value']) ? array() : json_decode($_COOKIE['ability_value']);
   $values['biographiya'] = empty($_COOKIE['biographiya_value']) ? '' : $_COOKIE['biographiya_value'];
+  $values['check'] = empty($_COOKIE['check_value']) ? '' : $_COOKIE['check_value'];
 
   include('form.php');
   exit();
@@ -92,7 +98,7 @@ if (empty($_POST['gen']) || ($_POST['gen']!='m' && $_POST['gen']!='f')) {
 else {
   setcookie('gen_value', $_POST['gen'], time() + 30 * 24 * 60 * 60);
 }
-if (empty($_POST['body']) || ($_POST['body']!='0' && $_POST['body']!='4' && $_POST['body']!='5')) {
+if (empty($_POST['body']) || ($_POST['body']!='3' && $_POST['body']!='4' && $_POST['body']!='5')) {
    setcookie('body_error', '1', time() + 24 * 60 * 60);
    $errors = TRUE;
 }
@@ -118,21 +124,38 @@ if (empty($_POST['biographiya']) || !preg_match('/^[0-9A-Za-z0-9А-Яа-я,\.\s]
 else {
   setcookie('biographiya_value', $_POST['biographiya'], time() + 30 * 24 * 60 * 60);
 }
+if (!isset($_POST['check'])) {
+    setcookie('check_error', '1', time() + 24 * 60 * 60);
+    $errors = TRUE;
+}
+else {
+  setcookie('check_value', $_POST['check'], time() + 30 * 24 * 60 * 60);
+}
 
 if ($errors) {
-  exit();
+	setcookie('save','',100000);
+    header('Location: index.php');
 }
+    else {
+      setcookie('name_error', '', 100000);
+      setcookie('email_error', '', 100000);
+      setcookie('birthdayear_error', '', 100000);
+      setcookie('gen_error', '', 100000);
+      setcookie('body_error', '', 100000);
+      setcookie('ability_error', '', 100000);
+	  setcookie('check_error', '', 100000);
+    }
 
 $user = 'u54409';
 $pass = '3113126';
 $db = new PDO('mysql:host=localhost;dbname=u54409', $user, $pass,
-  [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); 
+  [PDO::ATTR_PERSISTENT => true, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]); // Заменить test на имя БД, совпадает с логином uXXXXX
 
 try {
-  $stmt = $db->prepare("INSERT INTO forma SET name = ?, email=?, birthday=?, sex=?, biographiya=?, limbs=?");
-  $stmt->execute([$_POST['name'], $_POST['email'], $_POST['birthdayear'], $_POST['gen'], $_POST['biographiya'], $_POST['body']]);
+  $stmt = $db->prepare("INSERT INTO forma SET name = ?, email = ?, birthday = ?, sex = ?, limbs = ?, biographiya = ?");
+  $stmt->execute([$_POST['name'], $_POST['email'], $_POST['birthdayear'], $_POST['gen'], $_POST['body'], $_POST['biographiya']]);
   $app_id = $db->lastInsertId();
-  $stmt = $db->prepare("INSERT INTO abforma SET app_id=?, a_id= ?");
+  $stmt = $db->prepare("INSERT INTO abforma SET app_id = ?, a_id=?");
   foreach ($_POST['ability'] as $ability) {
     $stmt->execute([$app_id,$ability ]);
   }
@@ -141,5 +164,7 @@ catch(PDOException $e){
   print('Error : ' . $e->getMessage());
   exit();
 }
-
-header('Location: ?save=1');
+    if(!$errors){
+      setcookie('save', '1');
+    }
+header('Location: ./');

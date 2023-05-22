@@ -4,8 +4,22 @@
     <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
     <title>Task 4</title>
     <link rel="stylesheet" href="style.css">
+    <style>
+	.error {
+    background-color: red;
+}
+</style>
 </head>
 <body>
+<?php
+if (!empty($messages)) {
+  print('<div id="messages">');
+  foreach ($messages as $message) {
+    print($message);
+  }
+  print('</div>');
+}
+?>
 <div id = "form">
   <form action=""
     method="POST">
@@ -46,11 +60,11 @@
       Количество конечностей<br/>
     <div class="lim">
     <label><input type="radio" checked="checked"
-      name="body" value="0" 
+      name="body" value="3" 
     <?php print($errors['body'] ? 'class="error"' : '');?>
-      <?php if ($values['body']=='0') print 'checked';?>
+      <?php if ($values['body']=='3') print 'checked';?>
     />
-      0</label>
+        3</label>
     <label><input type="radio"
       name="body" value="4" 
     <?php print($errors['body'] ? 'class="error"' : '');?>
@@ -78,7 +92,7 @@
       Биография<br />
         <textarea name="biographiya"
         <?php print($errors['biographiya'] ? 'class="error"' : '');?>
-        value = "<?php print $values['biographiya'];?>"></textarea>
+        ><?php print $values['biographiya'];?></textarea>
         </label><br />    
       <label><input type="checkbox" checked="checked"
         name="check" />
